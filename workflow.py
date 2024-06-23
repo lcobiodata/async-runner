@@ -39,6 +39,7 @@ class AsyncRunner:
 
 
 if __name__ == "__main__":
+
     # Define a function that takes the task object and plots a dependency graph
     def plot_dependency_graph(tasks):
         G = nx.DiGraph()
@@ -50,13 +51,15 @@ if __name__ == "__main__":
         nx.draw(G, pos, with_labels=True, node_size=3000, node_color="skyblue", font_size=10, font_weight="bold", font_color="black", edge_color="gray", linewidths=1, arrowsize=20)
         plt.show()
 
-    class Tasks:
+    
+    # Define a class that contains the asynchronous tasks
+    class Pipeline:
         @upstream()
         async def task_1(self):
             print("Task 1: Making API call")
             trigger = asyncio.sleep(0.1) # Simulating API call
             await asyncio.sleep(0.1)  # Simulating some other work
-            await trigger
+            await trigger # Simulating API call
             await asyncio.sleep(0.1)  # Simulating some other work
             return "Task 1 Result"
 
@@ -71,7 +74,7 @@ if __name__ == "__main__":
             print("Task 3: Making API call with data:", task_1_result)
             trigger = asyncio.sleep(0.1) # Simulating API call
             await asyncio.sleep(0.1)  # Simulating some other work
-            await trigger
+            await trigger # Simulating API call
             await asyncio.sleep(0.1)  # Simulating some other work
             return "Task 3 Result"
 
@@ -80,7 +83,7 @@ if __name__ == "__main__":
             print("Task 4: Making API call with data:", task_2_result, task_3_result)
             trigger = asyncio.sleep(0.1) # Simulating API call
             await asyncio.sleep(0.1)  # Simulating some other work
-            await trigger
+            await trigger # Simulating API call
             await asyncio.sleep(0.1)  # Simulating some other work
             return "Task 4 Result"
 
@@ -98,7 +101,7 @@ if __name__ == "__main__":
             print("Task 6: Making API call with data:", task_4_result)
             trigger = asyncio.sleep(0.1) # Simulating API call
             await asyncio.sleep(0.1)  # Simulating some other work
-            await trigger
+            await trigger # Simulating API call
             await asyncio.sleep(0.1)  # Simulating some other work
             return "Task 6 Result"
 
@@ -116,7 +119,7 @@ if __name__ == "__main__":
             print("Task 8: Making API call with data:", task_5_result, task_6_result, task_7_result)
             trigger = asyncio.sleep(0.1) # Simulating API call
             await asyncio.sleep(0.1)  # Simulating some other work
-            await trigger
+            await trigger # Simulating API call
             await asyncio.sleep(0.1)  # Simulating some other work
             return "Task 8 Result"
 
@@ -125,7 +128,7 @@ if __name__ == "__main__":
             print("Task 9: Making API call with data:", task_8_result)
             trigger = asyncio.sleep(0.1) # Simulating API call
             await asyncio.sleep(0.1)  # Simulating some other work
-            await trigger
+            await trigger # Simulating API call
             await asyncio.sleep(0.1)  # Simulating some other work
             return "Task 9 Result"
 
@@ -134,7 +137,7 @@ if __name__ == "__main__":
             print("Task 10: Making API call with data:", task_8_result)
             trigger = asyncio.sleep(0.1) # Simulating API call
             await asyncio.sleep(0.1)  # Simulating some other work
-            await trigger
+            await trigger # Simulating API call
             await asyncio.sleep(0.1)  # Simulating some other work
             return "Task 10 Result"
         
@@ -161,7 +164,7 @@ if __name__ == "__main__":
             print("Task 13: Making API call with data:", task_3_result, task_8_result)
             trigger = asyncio.sleep(0.1) # Simulating API call
             await asyncio.sleep(0.1)  # Simulating some other work
-            await trigger
+            await trigger # Simulating API call
             await asyncio.sleep(0.1)  # Simulating some other work
             return "Task 13 Result"
 
@@ -170,7 +173,7 @@ if __name__ == "__main__":
             print("Task 14: Making API call with data:", task_1_result)
             trigger = asyncio.sleep(0.1) # Simulating API call
             await asyncio.sleep(0.1)  # Simulating some other work
-            await trigger
+            await trigger # Simulating API call
             await asyncio.sleep(0.1)  # Simulating some other work
             return "Task 14 Result"
         
@@ -179,7 +182,7 @@ if __name__ == "__main__":
             print("Task 15: Making API call with data:", task_7_result)
             trigger = asyncio.sleep(0.1) # Simulating API call
             await asyncio.sleep(0.1)  # Simulating some other work
-            await trigger
+            await trigger # Simulating API call
             await asyncio.sleep(0.1)  # Simulating some other work
             return "Task 15 Result"
 
@@ -188,12 +191,17 @@ if __name__ == "__main__":
             print("Awaiting task 9, task 10, task 11, task 12, task 13, task 14, task 15")
             trigger = asyncio.sleep(0.1) # Simulating API call
             await asyncio.sleep(0.1)  # Simulating some other work
-            await trigger
+            await trigger # Simulating API call
             await asyncio.sleep(0.1)  # Simulating some other work
             return f"Main Task Result: {task_9_result}, {task_10_result}, {task_11_result}, {task_12_result}, {task_13_result}, {task_14_result}, {task_15_result}"
 
-    tasks = Tasks()
+    # Create an instance of the Pipeline class
+    tasks = Pipeline()
+
+    # Create an instance of the AsyncRunner class with the tasks
     workflow = AsyncRunner(tasks)
+
+    # Run the workflow
     from viztracer import VizTracer
     output_file = "output.json"
     # Use VizTracer to trace the execution of the function
@@ -203,5 +211,6 @@ if __name__ == "__main__":
     ) as tracer:
         asyncio.run(workflow.run())
     print("Results:\n", json.dumps(workflow.results.__dict__, indent=2))
+
     # Plot the dependency graph
     plot_dependency_graph(tasks)
