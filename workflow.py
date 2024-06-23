@@ -63,25 +63,44 @@ if __name__ == "__main__":
 
     def plot_dependency_graph(tasks):
         G = nx.DiGraph()
+        
+        # Build the graph based on task dependencies
         for task in dir(tasks):
             if not task.startswith('__') and hasattr(getattr(tasks, task), 'upstream'):
                 for dep in getattr(tasks, task).upstream:
                     G.add_edge(dep, task)
+        
+        # Assign a layer to each node based on its depth in the graph
+        for node in nx.topological_sort(G):
+            G.nodes[node]['subset'] = len(nx.ancestors(G, node))
+        
         # Export to GraphML file
         nx.write_graphml(G, "workflow.graphml")
-        pos = nx.kamada_kawai_layout(G)
+        
+        # Use the dot layout for a top-bottom hierarchical view
+        pos = nx.nx_pydot.graphviz_layout(G, prog="dot")
+        
+        plt.figure(figsize=(12, 8))
         nx.draw(G, pos, with_labels=True, node_size=3000, node_color="skyblue", font_size=10, font_weight="bold", font_color="black", edge_color="gray", linewidths=1, arrowsize=20)
+        plt.title("Task Dependency Graph")
         plt.show()
+
 
     class Pipeline:
         @upstream()
-        async def extract_data_a(self):
+        async def start_pipeline(self):
+            print("Starting pipeline")
+            await simulate_api_call()
+            return "Pipeline Started"
+
+        @upstream('start_pipeline')
+        async def extract_data_a(self, initial_setup):
             print("Extracting data from source A")
             await simulate_api_call()
             return {"data_a": "raw data A"}
 
-        @upstream()
-        async def extract_data_b(self):
+        @upstream('start_pipeline')
+        async def extract_data_b(self, initial_setup):
             print("Extracting data from source B")
             await simulate_api_call()
             return {"data_b": "raw data B"}
