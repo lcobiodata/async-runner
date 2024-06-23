@@ -67,6 +67,8 @@ if __name__ == "__main__":
             if not task.startswith('__') and hasattr(getattr(tasks, task), 'upstream'):
                 for dep in getattr(tasks, task).upstream:
                     G.add_edge(dep, task)
+        # Export to GraphML file
+        nx.write_graphml(G, "workflow.graphml")
         pos = nx.kamada_kawai_layout(G)
         nx.draw(G, pos, with_labels=True, node_size=3000, node_color="skyblue", font_size=10, font_weight="bold", font_color="black", edge_color="gray", linewidths=1, arrowsize=20)
         plt.show()
