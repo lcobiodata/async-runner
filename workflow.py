@@ -38,14 +38,26 @@ class AsyncRunner:
             print(f"Running task: {task_name} already in futures")
             await getattr(self.futures, task_name)
 
-    async def run(self):
-        """
-        Run the workflow by starting from the task with no dependencies.
-        """
+    async def _run(self):
         all_tasks = [task for task in dir(self.tasks) if not task.startswith('__') and hasattr(getattr(self.tasks, task), 'upstream')]
         all_deps = [dep for task in all_tasks if hasattr(getattr(self.tasks, task), 'upstream') for dep in getattr(self.tasks, task).upstream]
         ultimate_task = next(task for task in all_tasks if task not in all_deps)
         await self._run_task(ultimate_task)
+
+    def run(self):
+        """Safe top-level entry point for sync code."""
+        try:
+            asyncio.run(self._run())
+        except RuntimeError as e:
+            loop = asyncio.get_event_loop()
+            if loop.is_running():
+                # Let the caller handle the coroutine if already inside an event loop
+                raise RuntimeError("Cannot use `run()` inside an async event loop. Use `await arun()` instead.")
+            loop.run_until_complete(self._run())
+
+    async def arun(self):
+        """Async version, for use inside coroutines or notebooks."""
+        await self._run()
 
 
 if __name__ == "__main__":
@@ -199,7 +211,7 @@ if __name__ == "__main__":
         output_file=output_file,
         ignore_c_function=True
     ) as tracer:
-        asyncio.run(workflow.run())
+        workflow.run()
     print("Results:\n", json.dumps(workflow.results.__dict__, indent=2))
 
     plot_dependency_graph(tasks)
